@@ -1,11 +1,32 @@
 (ns upcloud.web
-  (:use ring.adapter.jetty))
+  (use ring.adapter.jetty)
+  (use ring.middleware.multipart-params)
+  (use upcloud.upload))
 
-(defn app [req]
+(defn handler-form [req]
   {:status 200
-   :headers {"Content-Type" "text/plain"}
-   :body "Hello from Clojure!\n"})
+   :headers {"Content-Type" "text/html"}
+   :body "<html>
+              <head><title>Welcome</title></head>
+              <body>
+                <form action=\"upload\" method=\"post\" enctype=\"multipart/form-data\">
+                  <input type=\"file\" name=\"uploaded\">
+                  <input type=\"submit\">
+                </form>
+              </body>
+         </html>\n"})
 
-(defn -main []
-  (let [port (Integer/parseInt (System/getenv "PORT"))]
-    (run-jetty app {:port port})))
+(defn handler-upload [reader-fn req]
+  ((wrap-multipart-params {:store reader-fn}) #()))
+
+(defn- handler-for [req]
+  (condp = (req :uri)
+    "/upload"   handler-upload 
+    handler-form))
+    
+(defn app [req] ((handler-for  req)))
+  
+(defn start! [port]
+  (doto (Thread. #(run-jetty #'app {:port port})) .start))
+
+(defn -main [] (start! (Integer/parseInt (System/getenv "PORT")))) 
