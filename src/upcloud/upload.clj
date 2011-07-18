@@ -1,6 +1,7 @@
 (ns upcloud.upload
-  (import [java.util Arrays])
-  (import [java.io InputStream]))
+  (:require [clojure.java.io :as io])
+  (:import [java.util Arrays])
+  (:import [java.io InputStream]))
 
 (declare *writer-fn*)
 
@@ -14,3 +15,8 @@
               (let [chunk (Arrays/copyOf buffer number-of-bytes-read)]
                 (*writer-fn* chunk))
               (recur))))))))
+
+(defn make-writer-fn [target-dir target-file]
+  (fn [bytes]
+    (with-open [out (io/output-stream (str target-dir target-file) :append true)]
+      (.write out bytes))))

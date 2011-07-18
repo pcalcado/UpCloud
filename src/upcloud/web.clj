@@ -1,3 +1,4 @@
+
 (ns upcloud.web
   (use ring.adapter.jetty)
   (use ring.middleware.multipart-params)
@@ -16,12 +17,11 @@
               </body>
          </html>\n"})
 
-(defn handler-upload [reader-fn req]
-  ((wrap-multipart-params {:store reader-fn}) #()))
+(defn handler-upload [req] :not-implemented)
 
 (defn- handler-for [req]
   (condp = (req :uri)
-    "/upload"   handler-upload 
+    "/upload"   (handler-upload req) 
     handler-form))
     
 (defn app [req] ((handler-for  req)))
