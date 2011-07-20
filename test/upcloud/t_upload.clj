@@ -21,7 +21,7 @@
              temp-file "test.dat"
              temp-path (str temp-dir temp-file)]
         (fact "should write to directory specified"
-              (io/delete-file temp-path)
+              (io/delete-file temp-path true)
               (let [first-bytes (. "These are the first bytes..." getBytes)
                     more-bytes (. "and these are even more bytes!" getBytes)
                     writer-fn (make-writer-fn temp-dir temp-file)]
