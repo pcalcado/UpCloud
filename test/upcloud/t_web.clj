@@ -35,7 +35,8 @@
 (facts "about the upload handler"
        (fact "it saves the file to the temp directory"
              (let [expected-temp-dir (System/getProperty "java.io.tmpdir")
-                   expected-filename "this-should-be-the-filename.mp3"                   req  {:params {"uploaded" {:filename "file-name.mp3", :size 666, :content-type "audio/mp3"}, "upload-id" "1231"} :body (.getBytes "from some random string")}]
+                   expected-filename "this-should-be-the-filename.mp3"
+                   req  {:body (.getBytes "from some random string")}]
                (handler-upload req) => {:status 200}
                (provided
                 (filename-for req) => expected-filename

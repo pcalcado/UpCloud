@@ -10,10 +10,11 @@
        
        (fact "should write uploaded file in chunks"
              (let [fake-input (ByteArrayInputStream. a-lot-of-bytes)
-                   chunks (ref (seq nil))]
-               (binding [*writer-fn* (fn [bytes] (dosync (alter chunks concat (seq bytes))))]
-                 (upload! fake-input))
-               @chunks => (seq a-lot-of-bytes))))
+                   chunks (ref (seq nil))
+                   writer-fn (fn [bytes] (dosync (alter chunks concat (seq bytes))))
+                   upload! (make-upload writer-fn)]
+                 (upload! fake-input)
+                 @chunks) => (seq a-lot-of-bytes)))
 
 
 (facts "about making a write function"

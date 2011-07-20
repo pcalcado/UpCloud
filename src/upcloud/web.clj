@@ -28,10 +28,10 @@
          </html>\n")})
 
 (defn handler-upload [req]
-  (let [store-fn (fn [multipart-map]
-                   (upload! (:stream multipart-map)))]
-        (binding [*writer-fn* (make-writer-fn (temp-directory) (filename-for req))]
-      ((wrap-multipart-params return-200 {:store store-fn}) req))))
+  (let [writer-fn (make-writer-fn (temp-directory) (filename-for req))
+        upload! (make-upload writer-fn)
+        store-fn (fn [multipart-map] (upload! (:stream multipart-map)))]
+    ((wrap-multipart-params return-200 {:store store-fn}) req)))
 
 (defn- handler-for [req]
   (condp = (req :uri)
