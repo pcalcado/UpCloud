@@ -12,7 +12,7 @@
              (let [fake-input (ByteArrayInputStream. a-lot-of-bytes)
                    chunks (ref (seq nil))]
                (binding [*writer-fn* (fn [bytes] (dosync (alter chunks concat (seq bytes))))]
-                 (upload! fake-input (alength a-lot-of-bytes)))
+                 (upload! fake-input))
                @chunks => (seq a-lot-of-bytes))))
 
 
