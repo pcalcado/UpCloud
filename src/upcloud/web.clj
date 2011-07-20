@@ -17,15 +17,15 @@
 (defn handler-form [req]
   {:status 200
    :headers {"Content-Type" "text/html"}
-   :body "<html>
+   :body (str"<html>
               <head><title>Welcome</title></head>
               <body>
-                <form action=\"upload?banana2\" method=\"post\" enctype=\"multipart/form-data\">
+                <form action=\"upload?" (System/currentTimeMillis)  ".mp3\" method=\"post\" enctype=\"multipart/form-data\">
                   <input type=\"file\" name=\"uploaded\">
                   <input type=\"submit\">
                 </form>
               </body>
-         </html>\n"})
+         </html>\n")})
 
 (defn handler-upload [req]
   (let [store-fn (fn [multipart-map]
