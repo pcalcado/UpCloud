@@ -6,7 +6,7 @@
 (declare *writer-fn*)
 
 (defn make-upload-fn [writer-fn]
-  (fn [#^InputStream input-stream]
+  (fn [#^InputStream input-stream file-size]
     (let [buffer (byte-array 512)]
       (with-open [input input-stream]
         (loop []

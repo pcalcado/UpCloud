@@ -8,7 +8,7 @@
 
 (defn filename-for [req] (:query-string req))
 
-(defn temp-file-size [req] (:size ((:params req) "uploaded")))
+(defn temp-file-size [req] (:content-length req))
 
 (defn temp-directory [] (System/getProperty "java.io.tmpdir"))
 
@@ -30,7 +30,7 @@
 (defn handler-upload [req]
   (let [writer-fn (make-writer-fn (temp-directory) (filename-for req))
         upload! (make-upload-fn writer-fn)
-        store-fn (fn [multipart-map] (upload! (:stream multipart-map)))]
+        store-fn (fn [multipart-map] (upload! (:stream multipart-map) 1))]
     ((wrap-multipart-params return-200 {:store store-fn}) req)))
 
 (defn- handler-for [req]

@@ -2,6 +2,8 @@
   (:use [upcloud.web])
   (:use [midje.sweet]))
 
+;.;. Happiness comes when you believe that you have done something truly
+;.;. meaningful. -- Yan
 (facts "about the file to be saved"
        (let [upload-id "this-is-my-random-ish-upload-id"
              file-name "03 All Star.mp3"
@@ -12,15 +14,14 @@
                   :query-string upload-id,
                   :content-type "multipart/form-data; boundary=----WebKitFormBoundary2c0oHK4tobReX3Ah",
                   :uri "/upload",
-                  :server-name "localhost",
-                  :params {"uploaded" {:filename file-name, :size file-size, :content-type "audio/mp3"}},
+                  :server-name "localhost",               
                   :headers {"user-agent" "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_6_7) AppleWebKit/534.30 (KHTML, like Gecko) Chrome/12.0.742.122 Safari/534.30",
                             "origin" "http://localhost:8081", "accept-charset" "ISO-8859-1,utf-8;q=0.7,*;q=0.3",
                             "accept" "text/html, application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8", "host" "localhost:8081",
                             "referer" " http://localhost:8081/", "content-type" "multipart/form-data; boundary=----WebKitFormBoundary2c0oHK4tobReX3Ah",
                             "cache-control" "max-age=0","accept-encoding" "gzip, deflate,sdch",
                             "content-length" 3209787, "accept-language" "en-US, en;q=0.8", "connection" "keep-alive"},
-                  :content-length 3209787,
+                  :content-length file-size,
                   :server-port 8081,
                   :character-encoding nil,
                   :body :blablabla}]
@@ -28,7 +29,7 @@
          (fact "its name is based on upload id"
                (filename-for req) => upload-id)
 
-         (fact "its approximate size is retrieved from request"
+         (fact "its approximate (file + heaers) size is retrieved from request"
                (temp-file-size req) => file-size)))
 
 

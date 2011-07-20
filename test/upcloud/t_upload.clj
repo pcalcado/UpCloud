@@ -13,7 +13,7 @@
                    chunks (ref (seq nil))
                    writer-fn (fn [bytes] (dosync (alter chunks concat (seq bytes))))
                    upload! (make-upload-fn writer-fn)]
-                 (upload! fake-input)
+                 (upload! fake-input (alength a-lot-of-bytes))
                  @chunks) => (seq a-lot-of-bytes)))
 
 
