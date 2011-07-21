@@ -1,5 +1,6 @@
 (ns upcloud.t_web
   (:use [upcloud.web])
+  (:use [upcloud.upload])
   (:use [midje.sweet]))
 
 (facts "about the file to be saved"
@@ -31,14 +32,26 @@
                (approximate-file-size req) => file-size)))
 
 (facts "about the upload handler"
-       (fact "it saves the file to the temp directory"
+       (fact "it saves the file to the expected directory"
              (let [expected-temp-dir (System/getProperty "java.io.tmpdir")
                    expected-filename "this-should-be-the-filename.mp3"
                    req  {:body (.getBytes "from some random string")}]
                (handler-upload req) => {:status 200}
                (provided
                 (upload-id-for req) => expected-filename
-                (temp-directory) => expected-temp-dir)) )
+                (temp-directory) => expected-temp-dir))))
+
+(facts "about the status handler"
+       (fact "should report status for existing upload process"
+             (let [upload-id "123123123"
+                   req {:query-string upload-id}]
+               (handler-status req) => {:status 200 :body "{progress:'13'}"}
+               (provided
+                (progress-for upload-id) => 13)))
        
-       (fact "it uses the file-id parameter as the filename")
-       (fact "it returns a 200 when finished"))
+       (fact "should return 404 fon non existing upload process"
+             (let [upload-id "54321"
+                   req {:query-string upload-id}]
+               (handler-status req) => {:status 404 :body "No upload in progress"}
+               (provided
+                (progress-for upload-id) => nil))))

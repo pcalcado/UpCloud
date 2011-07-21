@@ -20,23 +20,29 @@
    :body (str"<html>
               <head><title>Welcome</title></head>
               <body>
-                <form action=\"upload?" (System/currentTimeMillis)  ".mp3\" method=\"post\" enctype=\"multipart/form-data\">
+                <form action=\"upload?" (System/currentTimeMillis)  "\" method=\"post\" enctype=\"multipart/form-data\">
                   <input type=\"file\" name=\"uploaded\">
                   <input type=\"submit\">
                 </form>
               </body>
          </html>\n")})
 
+(defn handler-status [req]
+  (if-let [progress (progress-for (upload-id-for req))]
+    {:status 200 :body (str "{progress:'" progress "'}")}
+    {:status 404 :body "No upload in progress"}))
+
 (defn handler-upload [req]
   (let [writer-fn (make-writer-fn (temp-directory) (upload-id-for req))
-        notifier-fn (fn [& _])
+        notifier-fn notify-progress-for
         upload! (make-upload-fn (upload-id-for req) writer-fn notifier-fn (approximate-file-size req))
         store-fn (fn [multipart-map] (upload! (:stream multipart-map)))]
     ((wrap-multipart-params return-200 {:store store-fn}) req)))
 
 (defn- handler-for [req]
   (condp = (req :uri)
-    "/upload"   (handler-upload req) 
+    "/upload" (handler-upload req)
+    "/status" (handler-status req)
     (handler-form req)))
     
 (defn app [req] (handler-for req))
