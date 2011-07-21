@@ -31,7 +31,7 @@
   (let [writer-fn (make-writer-fn (temp-directory) (upload-id-for req))
         notifier-fn (fn [& _])
         upload! (make-upload-fn (upload-id-for req) writer-fn notifier-fn (approximate-file-size req))
-        store-fn (fn [multipart-map] (upload! (:stream multipart-map) (approximate-file-size req)))]
+        store-fn (fn [multipart-map] (upload! (:stream multipart-map)))]
     ((wrap-multipart-params return-200 {:store store-fn}) req)))
 
 (defn- handler-for [req]

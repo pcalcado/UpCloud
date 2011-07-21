@@ -16,7 +16,7 @@
                    notifier-fn (fn [& _])
                    file-size (alength a-lot-of-bytes)
                    upload! (make-upload-fn upload-id writer-fn notifier-fn file-size)]
-                 (upload! fake-input file-size)
+                 (upload! fake-input)
                  @chunks) => (seq a-lot-of-bytes))
        
        (fact "should notify about progress every time it writes a chunk"
@@ -27,7 +27,7 @@
                    notifier-fn (fn [upload-id current total] (dosync (alter notifications conj [upload-id current total])))
                    file-size (alength a-lot-of-bytes)
                    upload! (make-upload-fn upload-id writer-fn notifier-fn file-size)]
-                 (upload! fake-input file-size)
+                 (upload! fake-input)
                  @notifications => [[upload-id 0 file-size] [upload-id 512 file-size] [upload-id file-size file-size]])))
 
 

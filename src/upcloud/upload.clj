@@ -3,10 +3,8 @@
   (:import [java.util Arrays])
   (:import [java.io InputStream]))
 
-(declare *writer-fn*)
-
 (defn make-upload-fn [upload-id writer-fn notifier-fn file-size]
-  (fn [#^InputStream input-stream file-size]
+  (fn [#^InputStream input-stream]
     (let [buffer-size 512
           buffer (byte-array buffer-size)]
       (with-open [input input-stream]
@@ -25,3 +23,4 @@
   (fn [bytes]
     (with-open [out (io/output-stream (str target-dir target-file) :append true)]
       (.write out bytes))))
+
