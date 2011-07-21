@@ -2,8 +2,6 @@
   (:use [upcloud.web])
   (:use [midje.sweet]))
 
-;.;. Happiness comes when you believe that you have done something truly
-;.;. meaningful. -- Yan
 (facts "about the file to be saved"
        (let [upload-id "this-is-my-random-ish-upload-id"
              file-name "03 All Star.mp3"
@@ -27,11 +25,10 @@
                   :body :blablabla}]
 
          (fact "its name is based on upload id"
-               (filename-for req) => upload-id)
+               (upload-id-for req) => upload-id)
 
          (fact "its approximate (file + heaers) size is retrieved from request"
-               (temp-file-size req) => file-size)))
-
+               (approximate-file-size req) => file-size)))
 
 (facts "about the upload handler"
        (fact "it saves the file to the temp directory"
@@ -40,10 +37,8 @@
                    req  {:body (.getBytes "from some random string")}]
                (handler-upload req) => {:status 200}
                (provided
-                (filename-for req) => expected-filename
+                (upload-id-for req) => expected-filename
                 (temp-directory) => expected-temp-dir)) )
        
        (fact "it uses the file-id parameter as the filename")
        (fact "it returns a 200 when finished"))
-
-

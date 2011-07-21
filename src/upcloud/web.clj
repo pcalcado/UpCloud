@@ -6,9 +6,9 @@
 
 (defn return-200 [& _] {:status 200})
 
-(defn filename-for [req] (:query-string req))
+(defn upload-id-for [req] (:query-string req))
 
-(defn temp-file-size [req] (:content-length req))
+(defn approximate-file-size [req] (:content-length req))
 
 (defn temp-directory [] (System/getProperty "java.io.tmpdir"))
 
@@ -28,9 +28,10 @@
          </html>\n")})
 
 (defn handler-upload [req]
-  (let [writer-fn (make-writer-fn (temp-directory) (filename-for req))
-        upload! (make-upload-fn writer-fn)
-        store-fn (fn [multipart-map] (upload! (:stream multipart-map) 1))]
+  (let [writer-fn (make-writer-fn (temp-directory) (upload-id-for req))
+        notifier-fn (fn [& _])
+        upload! (make-upload-fn (upload-id-for req) writer-fn notifier-fn (approximate-file-size req))
+        store-fn (fn [multipart-map] (upload! (:stream multipart-map) (approximate-file-size req)))]
     ((wrap-multipart-params return-200 {:store store-fn}) req)))
 
 (defn- handler-for [req]

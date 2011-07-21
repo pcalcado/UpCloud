@@ -9,12 +9,26 @@
 (facts "about uploading content"
        
        (fact "should write uploaded file in chunks"
-             (let [fake-input (ByteArrayInputStream. a-lot-of-bytes)
+             (let [upload-id "33some-upload-id3"
+                   fake-input (ByteArrayInputStream. a-lot-of-bytes)
                    chunks (ref (seq nil))
                    writer-fn (fn [bytes] (dosync (alter chunks concat (seq bytes))))
-                   upload! (make-upload-fn writer-fn)]
-                 (upload! fake-input (alength a-lot-of-bytes))
-                 @chunks) => (seq a-lot-of-bytes)))
+                   notifier-fn (fn [& _])
+                   file-size (alength a-lot-of-bytes)
+                   upload! (make-upload-fn upload-id writer-fn notifier-fn file-size)]
+                 (upload! fake-input file-size)
+                 @chunks) => (seq a-lot-of-bytes))
+       
+       (fact "should notify about progress every time it writes a chunk"
+             (let [upload-id "1some-upload-id2"
+                   fake-input (ByteArrayInputStream. a-lot-of-bytes)
+                   writer-fn identity
+                   notifications (ref [])
+                   notifier-fn (fn [upload-id current total] (dosync (alter notifications conj [upload-id current total])))
+                   file-size (alength a-lot-of-bytes)
+                   upload! (make-upload-fn upload-id writer-fn notifier-fn file-size)]
+                 (upload! fake-input file-size)
+                 @notifications => [[upload-id 0 file-size] [upload-id 512 file-size] [upload-id file-size file-size]])))
 
 
 (facts "about making a write function"
