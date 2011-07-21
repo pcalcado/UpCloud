@@ -4,7 +4,7 @@
   (:use [midje.sweet]))
 
 (facts "about the file to be saved"
-       (let [upload-id "this-is-my-random-ish-upload-id"
+       (let [upload-id "101110"
              file-name "03 All Star.mp3"
              file-size 3209595
              req {:remote-addr "0:0:0:0:0:0:0:1%0",
@@ -28,6 +28,9 @@
          (fact "its name is based on upload id"
                (upload-id-for req) => upload-id)
 
+         (fact "the name can only be a number"
+               (upload-id-for {:query-string "../../usr/bin/login"}) => (throws NumberFormatException))
+         
          (fact "its approximate (file + heaers) size is retrieved from request"
                (approximate-file-size req) => file-size)))
 

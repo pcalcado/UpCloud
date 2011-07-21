@@ -68,3 +68,4 @@
 
        (fact "asking for progress for inexisting upload-id returns nil"
              (progress-for "some-random-upload-id") => nil))
+

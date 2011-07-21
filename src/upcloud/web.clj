@@ -6,7 +6,8 @@
 
 (defn return-200 [& _] {:status 200})
 
-(defn upload-id-for [req] (:query-string req))
+(defn upload-id-for [req]
+  (str (Integer/parseInt (:query-string req))))
 
 (defn approximate-file-size [req] (:content-length req))
 
