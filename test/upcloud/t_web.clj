@@ -25,7 +25,7 @@
                   :character-encoding nil,
                   :body :blablabla}]
 
-         (fact "its name is based on upload id"
+         (fact "its name is an mp3 based on upload id"
                (upload-id-for req) => upload-id)
 
          (fact "the name can only be a number"
