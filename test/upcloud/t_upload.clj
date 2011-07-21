@@ -35,7 +35,8 @@
        (let [temp-dir (System/getProperty "java.io.tmpdir")
              temp-file "test.dat"
              temp-path (str temp-dir temp-file)]
-        (fact "should write to directory specified"
+
+         (fact "should write to directory specified"
               (io/delete-file temp-path true)
               (let [first-bytes (. "These are the first bytes..." getBytes)
                     more-bytes (. "and these are even more bytes!" getBytes)
@@ -43,3 +44,24 @@
                 (writer-fn first-bytes)
                 (writer-fn more-bytes)
                 (slurp temp-path) => "These are the first bytes...and these are even more bytes!"))))
+
+(facts "about upload progress notification"
+       
+       (fact "asking for progress for existing upload-id returns the % complete"
+             (let [upload-id-1 "661"
+                   upload-id-2 "662"
+                   upload-id-3 "663"
+                   upload-id-4 "664"]
+               (notify-progress-for upload-id-1 0 1024)
+               (notify-progress-for upload-id-2 12 1024)
+               (notify-progress-for upload-id-3 103 1024)
+               (notify-progress-for upload-id-4 1024 1024)
+
+               (progress-for upload-id-1) => 0
+               (progress-for upload-id-2) => 1
+               (progress-for upload-id-3) => 10
+               (progress-for upload-id-4) => 100))
+
+       (fact "asking for progress for inexisting upload-id returns nil"
+             (progress-for "some-random-upload-id") => nil))
+

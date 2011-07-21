@@ -3,6 +3,19 @@
   (:import [java.util Arrays])
   (:import [java.io InputStream]))
 
+(def *current-uploads* (ref {}))
+
+(defn notify-progress-for [upload-id bytes-read total-size]
+  (dosync (alter *current-uploads* assoc upload-id {:read bytes-read :total total-size})))
+
+(defn progress-for [upload-id]
+  (let [upload-status (@*current-uploads* upload-id)
+        so-far (:read upload-status)
+        total (:total upload-status)]
+    (if upload-status
+      (int (/ so-far (/ total 100)))
+      nil)))
+
 (defn make-upload-fn [upload-id writer-fn notifier-fn file-size]
   (fn [#^InputStream input-stream]
     (let [buffer-size 512
