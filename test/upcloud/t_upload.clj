@@ -4,7 +4,7 @@
   (:use [upcloud.upload])
   (:import [java.io ByteArrayInputStream]))
 
-(def a-lot-of-bytes (. (apply str (take 1024 (iterate identity "a"))) getBytes))
+(def a-lot-of-bytes (. (apply str (take 2049 (iterate identity "a"))) getBytes))
 
 (facts "about uploading content"
        
@@ -28,8 +28,12 @@
                    file-size (alength a-lot-of-bytes)
                    upload! (make-upload-fn upload-id writer-fn notifier-fn file-size)]
                  (upload! fake-input)
-                 @notifications => [[upload-id 0 file-size] [upload-id 512 file-size] [upload-id file-size file-size]])))
-
+                 @notifications => [["1some-upload-id2" 0 2049]
+                                    ["1some-upload-id2" 512 2049]
+                                    ["1some-upload-id2" 1024 2049]
+                                    ["1some-upload-id2" 1536 2049]
+                                    ["1some-upload-id2" 2048 2049]
+                                    ["1some-upload-id2" 2049 2049]])))
 
 (facts "about making a write function"
        (let [temp-dir (System/getProperty "java.io.tmpdir")
@@ -64,4 +68,3 @@
 
        (fact "asking for progress for inexisting upload-id returns nil"
              (progress-for "some-random-upload-id") => nil))
-

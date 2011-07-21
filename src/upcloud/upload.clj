@@ -21,15 +21,14 @@
     (let [buffer-size 512
           buffer (byte-array buffer-size)]
       (with-open [input input-stream]
-        (loop [counter 0]
+        (loop [total-bytes-read-so-far 0]
           (let [number-of-bytes-read (.read input buffer)]
             (when (pos? number-of-bytes-read)
               (do
-                (let [chunk (Arrays/copyOf buffer number-of-bytes-read)
-                      position-in-array (* counter buffer-size)]
-                  (writer-fn chunk)
-                  (notifier-fn upload-id position-in-array file-size)
-                  (recur (inc counter))))))))
+                (let [chunk (Arrays/copyOf buffer number-of-bytes-read)]
+                  (writer-fn chunk))
+                (notifier-fn upload-id total-bytes-read-so-far file-size)
+                (recur (+ total-bytes-read-so-far number-of-bytes-read)))))))
       (notifier-fn upload-id file-size file-size))))
 
 (defn make-writer-fn [target-dir target-file]
