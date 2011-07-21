@@ -10,12 +10,13 @@ FIXME: write
 This is very simple implementation of a file uploader in Clojure.
 
 I decided to keep depedencies to a minimum, so the only external
-library used by the main Clojure app is Ring. I use Midje for testing,
-it's my favourite testing framework for Clojure at the moment. The JavaScript piece
-uses JQuery (I am not doing JS without JQuery!).
+library used by the main Clojure app is Ring. I use Midje for testing
+--it's my favourite testing framework for Clojure at the moment. The
+JavaScript piece uses JQuery (I am not doing JS without JQuery!).
 
-Heroku released support to Clojure a couple of weeks ago, so I used
-this little project to test this support.
+Heroku released support to Clojure a couple of weeks ago, as I really
+like what they do for Ruby I decided to use this little project to
+test their platform.
 
 ### Notes
 - To support multiple uploads and not have any kind of session on the
