@@ -1,50 +1,59 @@
 (ns upcloud.web
-  (use ring.adapter.jetty)
-  (use ring.middleware.multipart-params)
-  (use ring.middleware.file)
-  (use upcloud.upload)
-  (use ring.middleware.multipart-params.temp-file))
+  (:use ring.adapter.jetty)
+  (:use ring.middleware.multipart-params)
+  (:use ring.middleware.file)
+  (:use ring.middleware.file-info)
+  (:use upcloud.upload)
+  (:use ring.middleware.multipart-params.temp-file))
 
 (defn return-200 [& _] {:status 200})
-(defn return-200 [& _] {:status 404})
+(defn return-404 [& _] {:status 404})
 
 (defn upload-id-for [req]
-  (str (Integer/parseInt (:query-string req))))
+  (let [name (:query-string req)]
+    (if (re-matches #"\d+\.?\w*" name)
+      name
+      (throw (IllegalArgumentException. (str "Trying to use [" name "] as temp file name!"))))))
 
 (defn approximate-file-size [req] (:content-length req))
 
-(defn temp-directory [] (System/getProperty "java.io.tmpdir"))
-
-(defn upload-from-stream [req])
+(defn temp-directory [] "./temp/")
 
 (defn handler-form [req]
-  (let [upload-id (System/currentTimeMillis)  ]
+  (let [upload-id-prefix (System/currentTimeMillis)  ]
    {:status 200
     :headers {"Content-Type" "text/html"}
-    :body (str"<html>
-              <head>
+    :body (str "<html>
+               <head>
                 <title>Welcome to UpCloud!</title>
-                <script src=\"jquery.js\"></script>
-                <script src=\"upcloud.js\"></script>
+                <link rel=\"stylesheet\" type=\"text/css\" href=\"static/upcloud.css\">
+                <script src=\"static/jquery-1.6.2.min.js\" type=\"text/javascript\" language=\"javascript\"></script>
+                <script src=\"static/upcloud.js\" type=\"text/javascript\" language=\"javascript\"></script>
               </head>
               <body>
                 <h1>Upload your awesomeness!</h1>
-                <form action=\"upload?" upload-id "\" method=\"post\" enctype=\"multipart/form-data\">
-                  <input type=\"file\" name=\"uploaded\">
+                <div id=\"uploadPane\">
+                  <form id=\"uploadForm\" target=\"upload-frame\" method=\"post\" enctype=\"multipart/form-data\" action=\"#\">
+                    <input type=\"hidden\" id=\"uploadIdPrefixField\" name=\"uploadId\" value=\"" upload-id-prefix "\">
+                    <input type=\"file\" name=\"uploaded\" id=\"uploadedFileBox\">
+                  </form>
+                </div>
+                <iframe id=\"uploadFrame\" name=\"upload-frame\"></iframe>
+                <form>
+                  <textarea name=\"description\"></textarea>
                   <input type=\"submit\">
                 </form>
-                <div id=\"statusPane\"></div>
-                <form action=\"description?" upload-id "\">
-                  <textarea name=\"description\"></textarea>
-                  <input type=\"submit\">         
-                </form>
+                <script  type=\"text/javascript\" language=\"javascript\">$ (document).ready(Ui.loadApp); </script>
               </body>
          </html>\n")}))
 
 (defn handler-status [req]
   (if-let [progress (progress-for (upload-id-for req))]
-    {:status 200 :body (str "{progress:'" progress "'}")}
-    {:status 404 :body "No upload in progress"}))
+    {:status 200
+     :headers {"Content-Type" "application/json"}
+     :body (str "{\"progress\":" progress "}")}
+    {:status 404
+     :body "No upload in progress"}))
 
 (defn handler-upload [req]
   (let [writer-fn (make-writer-fn (temp-directory) (upload-id-for req))
@@ -57,7 +66,8 @@
   (condp re-matches (req :uri)
     #"/upload" (handler-upload req)
     #"/status" (handler-status req)
-    #"/static/.*" ((wrap-file return-200 "./src/") req)
+    #"/temp/.*" ((wrap-file-info (wrap-file return-200  ".")) req)
+    #"/static/.*" ((wrap-file-info (wrap-file return-200 "./src/")) req)
      (handler-form req)))
     
 (defn app [req] (handler-for req))

@@ -28,8 +28,9 @@
          (fact "its name is an mp3 based on upload id"
                (upload-id-for req) => upload-id)
 
-         (fact "the name can only be a number"
-               (upload-id-for {:query-string "../../usr/bin/login"}) => (throws NumberFormatException))
+         (fact "the name can only be a 'number.extension'"
+               (upload-id-for {:query-string "666.mp3"}) => "666.mp3"
+               (upload-id-for {:query-string "../../usr/bin/login"}) => (throws IllegalArgumentException))
          
          (fact "its approximate (file + heaers) size is retrieved from request"
                (approximate-file-size req) => file-size)))
@@ -48,7 +49,7 @@
        (fact "should report status for existing upload process"
              (let [upload-id "123123123"
                    req {:query-string upload-id}]
-               (handler-status req) => {:status 200 :body "{progress:'13'}"}
+               (handler-status req) => {:status 200 :body "{\"progress\":13}" :headers {"Content-Type" "application/json"}}
                (provided
                 (progress-for upload-id) => 13)))
        

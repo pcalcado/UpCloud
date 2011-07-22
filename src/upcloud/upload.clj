@@ -26,7 +26,7 @@
             (when (pos? number-of-bytes-read)
               (do
                 (let [chunk (Arrays/copyOf buffer number-of-bytes-read)]
-                  (writer-fn chunk))
+                  (writer-fn chunk))                
                 (notifier-fn upload-id total-bytes-read-so-far file-size)
                 (recur (+ total-bytes-read-so-far number-of-bytes-read)))))))
       (notifier-fn upload-id file-size file-size))))
@@ -35,4 +35,3 @@
   (fn [bytes]
     (with-open [out (io/output-stream (str target-dir target-file) :append true)]
       (.write out bytes))))
-
