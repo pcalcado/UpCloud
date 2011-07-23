@@ -5,9 +5,6 @@ describe("Uploader", function() {
   var statusMessage = "";
   var refreshProgress = function (s){ statusMessage = s;};
 
-
-
-
   var action = "";
   var submitForm = function (a) { action = a;};
 

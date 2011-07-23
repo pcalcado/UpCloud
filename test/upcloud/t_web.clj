@@ -3,6 +3,20 @@
   (:use [upcloud.upload])
   (:use [midje.sweet]))
 
+(facts "about the form handler"
+       
+       (fact "should be HTML and have status 200"
+             (let [response (handler-form {}) ]
+               (:status response) => 200
+               (:headers response) => {"Content-Type" "text/html"}))
+       
+       (fact "should have a generated upload-id prefix"
+             (let [expected-prefix "666"]
+               (.contains (:body (handler-form {})) expected-prefix) => true
+               (provided
+                (generate-upload-id-prefix) => expected-prefix))))
+
+
 (facts "about the file to be saved"
        (let [upload-id "101110"
              file-name "03 All Star.mp3"
@@ -59,3 +73,18 @@
                (handler-status req) => {:status 404 :body "No upload in progress"}
                (provided
                 (progress-for upload-id) => nil))))
+
+(facts "about the description handler"
+       (let [file-name "1233.mp3"
+             description-text "\\o/ _o/ _o_ \\o_ |o| <o/ \\o> <o> |o| \\o/"
+             req {:params {"remote-file" file-name
+                           "description" description-text}}
+             response (handler-description req)]
+
+         (fact "should be HTML and have status 200"
+               (:status response) => 200
+               (:headers response) => {"Content-Type" "text/html"})
+
+         (fact "it had the description text and link to the file"
+               (.contains (:body response) "temp/1233.mp3") => true
+               (.contains (:body response) description-text) => true)))

@@ -38,6 +38,14 @@ App.uploader = function (refreshProgress, submitForm){
 
 var Ui = {};
 
+Ui.enableDescriptionForm = function (enabled) {
+  var value = null;
+  if (!enabled) {
+    value = true;
+  }
+  $ ("#submitDescriptionButton").attr ("disabled", value); 
+}
+
 Ui.performUploadInBackground = function () {
   var uploadIdPrefix = $ ("#uploadIdPrefixField").val ();
   var pathToLocalFile = $ ("#uploadedFileBox").val ();
@@ -48,17 +56,20 @@ Ui.performUploadInBackground = function () {
   var ajaxRefresh = function () {
     $.ajax ({url: Ui.uploader.uploadProgressUrl (),
              dataType: 'json',             
-             success: function (stats) { Ui.uploader.refresh (stats); },
+             success: function (stats) { completed = Ui.uploader.refresh (stats); },
              error: function (ignore, message) { console.log ("Error:" + message); }
             });    
   }; 
   
   var poll = function () {
-    if (!completed)  {    
+    if (completed){
+      Ui.enableDescriptionForm (true);
+    } 
+    else {    
       setTimeout (function (){ 
         ajaxRefresh (); 
         poll ();
-      }, 1000);
+      }, 500);
     }
   };
 
@@ -75,6 +86,7 @@ Ui.loadApp = function () {
   Ui.uploader = App.uploader (refreshProgress, submitForm);
   
   $ ("#uploadedFileBox").change (Ui.performUploadInBackground );
+  Ui.enableDescriptionForm (false);
 }
 
 $ (document).load

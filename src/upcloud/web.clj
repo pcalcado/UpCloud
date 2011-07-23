@@ -9,6 +9,8 @@
 (defn return-200 [& _] {:status 200})
 (defn return-404 [& _] {:status 404})
 
+(defn generate-upload-id-prefix [] (System/currentTimeMillis))
+
 (defn upload-id-for [req]
   (let [name (:query-string req)]
     (if (re-matches #"\d+\.?\w*" name)
@@ -19,8 +21,10 @@
 
 (defn temp-directory [] "./temp/")
 
+(defn link-to-temp-file [file] (str "temp/" file))
+
 (defn handler-form [req]
-  (let [upload-id-prefix (System/currentTimeMillis)  ]
+  (let [upload-id-prefix (generate-upload-id-prefix)]
    {:status 200
     :headers {"Content-Type" "text/html"}
     :body (str "<html>
@@ -39,10 +43,13 @@
                   </form>
                 </div>
                 <iframe id=\"uploadFrame\" name=\"upload-frame\"></iframe>
-                <form>
+
+                <form action=\"description\" method=\"post\">
+                  <input type=\"hidden\" id=\"remoteFileNameField\" name=\"remote-file\" value=\"\">
                   <textarea name=\"description\"></textarea>
-                  <input type=\"submit\">
+                  <input id=\"submitDescriptionButton\" type=\"submit\" value=\"Save\">
                 </form>
+
                 <script  type=\"text/javascript\" language=\"javascript\">$ (document).ready(Ui.loadApp); </script>
               </body>
          </html>\n")}))
@@ -62,10 +69,30 @@
         store-fn (fn [multipart-map] (upload! (:stream multipart-map)))]
     ((wrap-multipart-params return-200 {:store store-fn}) req)))
 
+(defn handler-description [req]
+  (println req)
+  (let [params (:params req)
+        description (params "description")
+        link-to-file (link-to-temp-file (params "remote-file"))]
+   {:status 200
+    :headers {"Content-Type" "text/html"}
+    :body (str "<html>
+               <head>
+                <title>Welcome to UpCloud!</title>
+              </head>
+              <body>
+                <h1>Yay!</h1>
+                <div>Your track is here: <a href=\"" link-to-file "\">" link-to-file  "</a></div>
+               <div>Description: " description  "</div>
+              </body>
+         </html>\n")}))
+
 (defn- handler-for [req]
+    (println req)
   (condp re-matches (req :uri)
     #"/upload" (handler-upload req)
     #"/status" (handler-status req)
+    #"/description" (handler-description req)
     #"/temp/.*" ((wrap-file-info (wrap-file return-200  ".")) req)
     #"/static/.*" ((wrap-file-info (wrap-file return-200 "./src/")) req)
      (handler-form req)))
