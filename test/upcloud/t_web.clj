@@ -1,7 +1,6 @@
 (ns upcloud.t_web
-  (:use [upcloud.web])
-  (:use [upcloud.upload])
-  (:use [midje.sweet]))
+  (:use (upcloud web upload)
+        (midje sweet)))
 
 (facts "about the form handler"
        

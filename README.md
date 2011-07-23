@@ -39,7 +39,7 @@ scenario) handling the life cycle of uploaded files after the initial
 upload. It would perform housekeeping in the in-memory map and send
 the files to S3. This service should be fairly easy to scale horizontally.
 - For scalability, the in-memory map can probably be replaced by
-memcached or some simple key-value storage system.
+memcached or some other simple key-value storage system.
 - The only security check at the moment is to make sure the file name
 doesn't have any funny chars, which could be used to temper with the
 filesystem. I assumed this was enough for this exercise, in a

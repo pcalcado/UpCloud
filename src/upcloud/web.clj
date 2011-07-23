@@ -1,10 +1,7 @@
 (ns upcloud.web
-  (:use ring.adapter.jetty)
-  (:use ring.middleware.multipart-params)
-  (:use ring.middleware.file)
-  (:use ring.middleware.file-info)
-  (:use upcloud.upload)
-  (:use ring.middleware.multipart-params.temp-file))
+  (:use (ring.adapter jetty)
+        (ring.middleware multipart-params file file-info)
+        (upcloud upload)))
 
 (defn return-200 [& _] {:status 200})
 (defn return-404 [& _] {:status 404})
@@ -25,9 +22,9 @@
 
 (defn handler-form [req]
   (let [upload-id-prefix (generate-upload-id-prefix)]
-   {:status 200
-    :headers {"Content-Type" "text/html"}
-    :body (str "<html>
+    {:status 200
+     :headers {"Content-Type" "text/html"}
+     :body (str "<html>
                <head>
                 <title>Welcome to UpCloud!</title>
                 <link rel=\"stylesheet\" type=\"text/css\" href=\"static/upcloud.css\">
@@ -70,13 +67,12 @@
     ((wrap-multipart-params return-200 {:store store-fn}) req)))
 
 (defn handler-description [req]
-  (println req)
   (let [params (:params req)
         description (params "description")
         link-to-file (link-to-temp-file (params "remote-file"))]
-   {:status 200
-    :headers {"Content-Type" "text/html"}
-    :body (str "<html>
+    {:status 200
+     :headers {"Content-Type" "text/html"}
+     :body (str "<html>
                <head>
                 <title>Welcome to UpCloud!</title>
               </head>
@@ -88,17 +84,16 @@
          </html>\n")}))
 
 (defn- handler-for [req]
-    (println req)
   (condp re-matches (req :uri)
     #"/upload" (handler-upload req)
     #"/status" (handler-status req)
     #"/description" (handler-description req)
     #"/temp/.*" ((wrap-file-info (wrap-file return-200  ".")) req)
     #"/static/.*" ((wrap-file-info (wrap-file return-200 "./src/")) req)
-     (handler-form req)))
-    
+    (handler-form req)))
+
 (defn app [req] (handler-for req))
-  
+
 (defn start! [port]
   (doto (Thread. #(run-jetty #'app {:port port})) .start))
 

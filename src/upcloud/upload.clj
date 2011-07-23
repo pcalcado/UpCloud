@@ -1,7 +1,7 @@
 (ns upcloud.upload
   (:require [clojure.java.io :as io])
-  (:import [java.util Arrays])
-  (:import [java.io InputStream]))
+  (:import [java.util Arrays]
+           [java.io InputStream]))
 
 (def *current-uploads* (ref {}))
 
