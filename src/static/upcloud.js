@@ -1,6 +1,6 @@
 var App = {};
 
-App.uploader = function (refreshProgress, submitForm){
+App.uploader = function (refreshProgressFn, sendFileFn){
   var pathToLocalFile = null;
   var uploadIdPrefix = null;
 
@@ -23,14 +23,13 @@ App.uploader = function (refreshProgress, submitForm){
       if (completed) {
         message = message + " <a href=\"/temp/" + remoteFileName ()  + "\">Uploaded to here.</a>";
       }
-      refreshProgress (message); 
+      refreshProgressFn (message); 
       return completed;      
     },
     start: function (uploadId, localPath) {
       uploadIdPrefix = uploadId;
       pathToLocalFile = localPath;
-      var action = "/upload?" + remoteFileName ();
-      submitForm (action);
+      sendFileFn (remoteFileName ());
     }  
   }
 };
@@ -77,13 +76,14 @@ Ui.performUploadInBackground = function () {
 }
 
 Ui.loadApp = function () {
-  var refreshProgress = function (statusMessage) { $ ("#uploadPane").html (statusMessage); };
-  var submitForm = function (action) { 
-    $ ("#uploadForm").attr ("action", action);
+  var refreshProgressFn = function (statusMessage) { $ ("#uploadPane").html (statusMessage); };
+  var sendFileFn = function (remoteFileName) { 
+    $ ("#uploadForm").attr ("action", "/upload?" + remoteFileName);    
     $ ("#uploadForm").submit ();
+    $ ("#remoteFileNameField").val (remoteFileName);    
   };
 
-  Ui.uploader = App.uploader (refreshProgress, submitForm);
+  Ui.uploader = App.uploader (refreshProgressFn, sendFileFn);
   
   $ ("#uploadedFileBox").change (Ui.performUploadInBackground );
   Ui.enableDescriptionForm (false);

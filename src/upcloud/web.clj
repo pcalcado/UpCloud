@@ -1,6 +1,6 @@
 (ns upcloud.web
   (:use (ring.adapter jetty)
-        (ring.middleware multipart-params file file-info)
+        (ring.middleware multipart-params file file-info params)
         (upcloud upload)))
 
 (defn return-200 [& _] {:status 200})
@@ -78,21 +78,21 @@
               </head>
               <body>
                 <h1>Yay!</h1>
-                <div>Your track is here: <a href=\"" link-to-file "\">" link-to-file  "</a></div>
+                <div>Your file <a href=\"" link-to-file "\"> is here</a>!</div>
                <div>Description: " description  "</div>
               </body>
          </html>\n")}))
 
-(defn- handler-for [req]
-  (condp re-matches (req :uri)
-    #"/upload" (handler-upload req)
-    #"/status" (handler-status req)
-    #"/description" (handler-description req)
-    #"/temp/.*" ((wrap-file-info (wrap-file return-200  ".")) req)
-    #"/static/.*" ((wrap-file-info (wrap-file return-200 "./src/")) req)
-    (handler-form req)))
+(defn- handler-for [uri]
+  (condp re-matches uri
+    #"/upload" handler-upload
+    #"/status" handler-status
+    #"/description" handler-description
+    #"/temp/.*" (wrap-file-info (wrap-file return-200  "."))
+    #"/static/.*" (wrap-file-info (wrap-file return-200 "./src/")) 
+    handler-form))
 
-(defn app [req] (handler-for req))
+(defn app [req] ((wrap-params (handler-for (:uri req))) req))
 
 (defn start! [port]
   (doto (Thread. #(run-jetty #'app {:port port})) .start))

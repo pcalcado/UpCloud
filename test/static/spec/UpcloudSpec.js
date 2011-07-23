@@ -5,11 +5,11 @@ describe("Uploader", function() {
   var statusMessage = "";
   var refreshProgress = function (s){ statusMessage = s;};
 
-  var action = "";
-  var submitForm = function (a) { action = a;};
+  var remoteFileName = "";
+  var sendFileFn = function (r) { remoteFileName = r};
 
   beforeEach(function() {
-    uploader = App.uploader(refreshProgress, submitForm);
+    uploader = App.uploader(refreshProgress, sendFileFn);
   });
 
 
@@ -18,9 +18,9 @@ describe("Uploader", function() {
     expect (uploader.uploadProgressUrl ()).toBe ("/status?123.mp3");
   });
 
-  it ("should modify action and submit form when upload starts", function() {
+  it ("should inform remote file name when upload starts", function() {
     uploader.start (uploadIdPrefix, pathToLocalFile);
-    expect (action).toBe ("/upload?123.mp3");
+    expect (remoteFileName).toBe ("123.mp3");
   })
   
   it ("should return progess message when not 100% uploaded",function () {
