@@ -60,9 +60,10 @@
     (return-404)))
 
 (defn handler-upload [req]
-  (let [upload-id (upload-id-for req)]
+  (let [upload-id (upload-id-for req)
+        temp-dir (temp-directory)]
    (try
-     (let [writer-fn (make-writer-fn (temp-directory) upload-id)
+     (let [writer-fn (make-writer-fn temp-dir upload-id)
            notifier-fn notify-progress-for
            upload! (make-upload-fn upload-id
                                    writer-fn
@@ -71,7 +72,7 @@
            store-fn (fn [multipart-map] (upload! (:stream multipart-map)))]
        ((wrap-multipart-params return-200 {:store store-fn}) req))
      (catch Exception _
-       (abandon upload-id)
+       (abandon temp-dir upload-id)
        (return-400)))))
 
 

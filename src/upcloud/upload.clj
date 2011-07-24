@@ -16,7 +16,8 @@
       (int (/ so-far (/ total 100)))
       nil)))
 
-(defn remove-progress-for [upload-id]
+(defn abandon [file-dir upload-id]
+  (io/delete-file (str file-dir upload-id) true)
   (dosync (alter *current-uploads* dissoc upload-id)))
 
 (defn make-upload-fn [upload-id writer-fn notifier-fn file-size]

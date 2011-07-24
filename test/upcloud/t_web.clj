@@ -68,7 +68,7 @@
                (provided
                 (upload-id-for broken-req) => expected-filename
                 (wrap-multipart-params irrelevant  irrelevant) => #(throw (RuntimeException. ))                
-                (remove-progress-for expected-filename) => nil))))
+                (abandon irrelevant expected-filename) => nil))))
 
 (facts "about the progress handler"
        (fact "should report progress for existing upload process"

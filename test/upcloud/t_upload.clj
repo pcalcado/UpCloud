@@ -9,7 +9,7 @@
 (facts "about uploading content"
        
        (fact "should write uploaded file in chunks"
-             (let [upload-id "33some-upload-id3"
+             (let [upload-id "564435.doc"
                    fake-input (ByteArrayInputStream. a-lot-of-bytes)
                    chunks (ref (seq nil))
                    writer-fn (fn [bytes] (dosync (alter chunks concat (seq bytes))))
@@ -20,7 +20,7 @@
                @chunks) => (seq a-lot-of-bytes))
        
        (fact "should notify about progress every time it writes a chunk"
-             (let [upload-id "1some-upload-id2"
+             (let [upload-id "884333.someextension"
                    fake-input (ByteArrayInputStream. a-lot-of-bytes)
                    writer-fn identity
                    notifications (ref [])
@@ -28,12 +28,12 @@
                    file-size (alength a-lot-of-bytes)
                    upload! (make-upload-fn upload-id writer-fn notifier-fn file-size)]
                (upload! fake-input)
-               @notifications => [["1some-upload-id2" 0 2049]
-                                  ["1some-upload-id2" 512 2049]
-                                  ["1some-upload-id2" 1024 2049]
-                                  ["1some-upload-id2" 1536 2049]
-                                  ["1some-upload-id2" 2048 2049]
-                                  ["1some-upload-id2" 2049 2049]])))
+               @notifications => [[upload-id 0 2049]
+                                  [upload-id 512 2049]
+                                  [upload-id 1024 2049]
+                                  [upload-id 1536 2049]
+                                  [upload-id 2048 2049]
+                                  [upload-id 2049 2049]])))
 
 (facts "about making a write function"
        (let [temp-dir (System/getProperty "java.io.tmpdir")
@@ -69,9 +69,17 @@
        (fact "asking for progress for inexisting upload-id returns nil"
              (progress-for "some-random-upload-id") => nil))
 
-(facts "about removing uploads from memory"
-       (fact "should remove existing upload from current map"
-             (let [upload-id "123/mkv"]
+(facts "about abandoning uploads"
+       (fact "should have removed existing upload from current map"
+             (let [temp-dir (System/getProperty "java.io.tmpdir")
+                   upload-id "1234567890.mkv"]
                (notify-progress-for upload-id 666 1000)
-               (remove-progress-for upload-id)
-               (progress-for upload-id) => nil)))
+               (abandon temp-dir upload-id)
+               (progress-for upload-id) => nil))
+
+       (fact "should have removed the file from temp directory"
+             (let [temp-dir "/tmp/"
+                   upload-id "123.mkv"]
+               (abandon temp-dir upload-id) => irrelevant
+               (provided
+                (io/delete-file "/tmp/123.mkv" true) => nil))))
