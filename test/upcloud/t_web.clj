@@ -1,6 +1,8 @@
 (ns upcloud.t_web
   (:use (upcloud web upload)
-        (midje sweet)))
+        (midje sweet)
+        (ring.middleware multipart-params)))
+
 
 (facts "about the form handler"
        
@@ -56,20 +58,30 @@
                (handler-upload req) => {:status 200}
                (provided
                 (upload-id-for req) => expected-filename
-                (temp-directory) => expected-temp-dir))))
+                (temp-directory) => expected-temp-dir)))
 
-(facts "about the status handler"
-       (fact "should report status for existing upload process"
+
+       (fact "it removes upload from current uploads and informs bad request if there is something wrong"
+             (let [expected-filename "666698.mp3"
+                   broken-req {:body :something}]
+               (handler-upload broken-req) => {:status 400}
+               (provided
+                (upload-id-for broken-req) => expected-filename
+                (wrap-multipart-params irrelevant  irrelevant) => #(throw (RuntimeException. ))                
+                (remove-progress-for expected-filename) => nil))))
+
+(facts "about the progress handler"
+       (fact "should report progress for existing upload process"
              (let [upload-id "123123123"
                    req {:query-string upload-id}]
                (handler-status req) => {:status 200 :body "{\"progress\":13}" :headers {"Content-Type" "application/json"}}
                (provided
                 (progress-for upload-id) => 13)))
        
-       (fact "should return 404 fon non existing upload process"
+       (fact "should return 404 for non existing upload process"
              (let [upload-id "54321"
                    req {:query-string upload-id}]
-               (handler-status req) => {:status 404 :body "No upload in progress"}
+               (handler-status req) => {:status 404}
                (provided
                 (progress-for upload-id) => nil))))
 

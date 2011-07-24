@@ -69,3 +69,9 @@
        (fact "asking for progress for inexisting upload-id returns nil"
              (progress-for "some-random-upload-id") => nil))
 
+(facts "about removing uploads from memory"
+       (fact "should remove existing upload from current map"
+             (let [upload-id "123/mkv"]
+               (notify-progress-for upload-id 666 1000)
+               (remove-progress-for upload-id)
+               (progress-for upload-id) => nil)))
