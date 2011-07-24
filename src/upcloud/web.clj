@@ -4,6 +4,7 @@
         (upcloud upload)))
 
 (defn return-200 [& _] {:status 200})
+(defn return-400 [& _] {:status 400})
 (defn return-404 [& _] {:status 404})
 
 (defn generate-upload-id-prefix [] (System/currentTimeMillis))
@@ -56,15 +57,23 @@
     {:status 200
      :headers {"Content-Type" "application/json"}
      :body (str "{\"progress\":" progress "}")}
-    {:status 404
-     :body "No upload in progress"}))
+    (return-404)))
 
 (defn handler-upload [req]
-  (let [writer-fn (make-writer-fn (temp-directory) (upload-id-for req))
-        notifier-fn notify-progress-for
-        upload! (make-upload-fn (upload-id-for req) writer-fn notifier-fn (approximate-file-size req))
-        store-fn (fn [multipart-map] (upload! (:stream multipart-map)))]
-    ((wrap-multipart-params return-200 {:store store-fn}) req)))
+  (let [upload-id (upload-id-for req)]
+   (try
+     (let [writer-fn (make-writer-fn (temp-directory) upload-id)
+           notifier-fn notify-progress-for
+           upload! (make-upload-fn upload-id
+                                   writer-fn
+                                   notifier-fn
+                                   (approximate-file-size req))
+           store-fn (fn [multipart-map] (upload! (:stream multipart-map)))]
+       ((wrap-multipart-params return-200 {:store store-fn}) req))
+     (catch Exception _
+       (abandon upload-id)
+       (return-400)))))
+
 
 (defn handler-description [req]
   (let [params (:params req)
