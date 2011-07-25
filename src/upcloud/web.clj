@@ -73,6 +73,7 @@
        ((wrap-multipart-params return-200 {:store store-fn}) req))
      (catch Exception _
        (abandon temp-dir upload-id)
+       (throw _)
        (return-400)))))
 
 
