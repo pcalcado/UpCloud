@@ -3,6 +3,8 @@
         (ring.middleware multipart-params file file-info params)
         (upcloud upload)))
 
+(defn log [& msg] (println (str msg)))
+
 (defn return-200 [& _] {:status 200})
 (defn return-400 [& _] {:status 400})
 (defn return-404 [& _] {:status 404})
@@ -53,6 +55,7 @@
          </html>\n")}))
 
 (defn handler-status [req]
+  (log "Uploading" req)
   (if-let [progress (progress-for (upload-id-for req))]
     {:status 200
      :headers {"Content-Type" "application/json"}
@@ -60,8 +63,6 @@
     (return-404)))
 
 (defn handler-upload [req]
-  (println  "aaaaaaaaaaaa")
-  (throw (RuntimeException. "puta que pariu"))
   (let [upload-id (upload-id-for req)
         temp-dir (temp-directory)]
    (try
@@ -74,8 +75,8 @@
            store-fn (fn [multipart-map] (upload! (:stream multipart-map)))]
        ((wrap-multipart-params return-200 {:store store-fn}) req))
      (catch Exception _
+       (.printStackTrace _)
        (abandon temp-dir upload-id)
-       (throw _)
        (return-400)))))
 
 
