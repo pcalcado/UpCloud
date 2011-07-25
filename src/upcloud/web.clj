@@ -3,7 +3,11 @@
         (ring.middleware multipart-params file file-info params)
         (upcloud upload)))
 
+<<<<<<< HEAD
 (defn log [& msg] (println (str msg)))
+=======
+(defn log [& msg] (prinln (str msg)))
+>>>>>>> 604d95f4d60f721ff0a0fb447dd054f8d212a18c
 
 (defn return-200 [& _] {:status 200})
 (defn return-400 [& _] {:status 400})
