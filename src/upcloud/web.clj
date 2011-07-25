@@ -107,4 +107,4 @@
 (defn start! [port]
   (doto (Thread. #(run-jetty #'app {:port port})) .start))
 
-(defn -main [] (start! (Integer/parseInt (System/getenv "PORT")))) 
+(defn -main [] (run-jetty app {:port (Integer/parseInt (System/getenv "PORT"))})) 
