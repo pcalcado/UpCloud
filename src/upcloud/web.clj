@@ -60,6 +60,8 @@
     (return-404)))
 
 (defn handler-upload [req]
+  (println  "aaaaaaaaaaaa")
+  (throw (RuntimeException. "puta que pariu"))
   (let [upload-id (upload-id-for req)
         temp-dir (temp-directory)]
    (try
