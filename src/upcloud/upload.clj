@@ -33,11 +33,17 @@
             (when (pos? number-of-bytes-read)
               (do
                 (let [chunk (Arrays/copyOf buffer number-of-bytes-read)]
-                  (writer-fn chunk))                
-                (notifier-fn upload-id total-bytes-read-in-this-iteration file-size)
-                (recur total-bytes-read-in-this-iteration)))))))))
+                  (writer-fn chunk))
+                (recur total-bytes-read-in-this-iteration))))))
+      (writer-fn))))
 
-(defn make-writer-fn [target-dir upload-id]
-  (fn [bytes]
-    (with-open [out (io/output-stream (str target-dir upload-id) :append true)]
-      (.write out bytes))))
+(defn make-writer-fn [target-dir upload-id notifier-fn file-size]
+  (let [total-bytes-read-so-far (ref 0)]
+    (fn
+      ([] (notifier-fn upload-id file-size file-size))
+      ([bytes]
+      (with-open [out (io/output-stream (str target-dir upload-id) :append true)]
+        (.write out bytes))
+      (dosync (alter total-bytes-read-so-far + (alength bytes)))
+      (notifier-fn upload-id @total-bytes-read-so-far file-size)))))
+

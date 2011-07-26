@@ -63,8 +63,8 @@
   (let [upload-id (upload-id-for req)
         temp-dir (temp-directory)]
    (try
-     (let [writer-fn (make-writer-fn temp-dir upload-id)
-           notifier-fn notify-progress-for
+     (let [notifier-fn notify-progress-for
+           writer-fn (make-writer-fn temp-dir upload-id notifier-fn (approximate-file-size req))
            upload! (make-upload-fn upload-id
                                    writer-fn
                                    notifier-fn
@@ -103,9 +103,12 @@
     #"/static/.*" (wrap-file-info (wrap-file return-200 "./src/")) 
     handler-form))
 
+
 (defn app [req] ((wrap-params (handler-for (:uri req))) req))
 
-(defn start! [port]
-  (doto (Thread. #(run-jetty #'app {:port port})) .start))
+(defn start-jetty! [port] (run-jetty #'app {:port port}))
 
-(defn -main [] (run-jetty app {:port (Integer/parseInt (System/getenv "PORT"))})) 
+(defn start-jetty-in-repl! [port]
+  (doto (Thread. #(start-jetty! port)) .start))
+
+(defn -main [] (start-jetty! (Integer/parseInt (System/getenv "PORT")))) 

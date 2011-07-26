@@ -12,42 +12,65 @@
              (let [upload-id "564435.doc"
                    fake-input (ByteArrayInputStream. a-lot-of-bytes)
                    chunks (ref (seq nil))
-                   writer-fn (fn [bytes] (dosync (alter chunks concat (seq bytes))))
+                   writer-fn (fn
+                               ([bytes] (dosync (alter chunks concat (seq bytes))))
+                               ([] nil))
                    notifier-fn (fn [& _])
                    file-size (alength a-lot-of-bytes)
                    upload! (make-upload-fn upload-id writer-fn notifier-fn file-size)]
                (upload! fake-input)
-               @chunks) => (seq a-lot-of-bytes))
-       
-       (fact "should notify about progress every time it writes a chunk"
-             (let [upload-id "884333.someextension"
-                   fake-input (ByteArrayInputStream. a-lot-of-bytes)
-                   writer-fn identity
-                   notifications (ref [])
-                   notifier-fn (fn [upload-id current total] (dosync (alter notifications conj [upload-id current total])))
-                   file-size (alength a-lot-of-bytes)
-                   upload! (make-upload-fn upload-id writer-fn notifier-fn file-size)]
-               (upload! fake-input)
-               @notifications => [[upload-id 512 2049]
-                                  [upload-id 1024 2049]
-                                  [upload-id 1536 2049]
-                                  [upload-id 2048 2049]
-                                  [upload-id 2049 2049]])))
+               @chunks) => (seq a-lot-of-bytes)))
 
 (facts "about the write function"
+       (let [temp-dir (System/getProperty "java.io.tmpdir")
+             upload-id "test.dat"
+             temp-path (str temp-dir upload-id)]
 
-       (fact "should write to directory specified"
-             (let [temp-dir (System/getProperty "java.io.tmpdir")
-                   upload-id "test.dat"
-                   temp-path (str temp-dir upload-id)]
+         (fact "should write to directory specified"
+               (let [notifier-fn (fn [& _])
+                     file-size 10]
 
-               (io/delete-file temp-path true)
-               (let [first-bytes (. "These are the first bytes..." getBytes)
-                     more-bytes (. "and these are even more bytes!" getBytes)
-                     writer-fn (make-writer-fn temp-dir upload-id)]
-                 (writer-fn first-bytes)
-                 (writer-fn more-bytes)
-                 (slurp temp-path) => "These are the first bytes...and these are even more bytes!"))))
+                 (io/delete-file temp-path true)
+
+                 (let [first-bytes (. "These are the first bytes..." getBytes)
+                       more-bytes (. "and these are even more bytes!" getBytes)
+                       writer-fn (make-writer-fn temp-dir upload-id notifier-fn file-size)]
+                   (writer-fn first-bytes)
+                   (writer-fn more-bytes)
+                   (slurp temp-path) => "These are the first bytes...and these are even more bytes!")))
+
+         (fact "should notify about progress every time it writes a chunk"
+               (let [first-chunk (byte-array 1000)
+                     second-chunk (byte-array 20)
+                     third-chunk (byte-array 4)
+                     file-size 1024
+                     headers-size 100
+                     file-plus-headers-size (+ file-size headers-size)
+                     notifications (ref [])
+                     notifier-fn (fn [upload-id current total] (dosync (alter notifications conj [upload-id current total])))]
+                 
+                 (io/delete-file temp-path true)
+                 
+                 (let [writer-fn (make-writer-fn temp-dir upload-id notifier-fn file-plus-headers-size)]
+                   (writer-fn first-chunk)
+                   (writer-fn second-chunk)
+                   (writer-fn third-chunk)
+
+                   @notifications => [[upload-id 1000 1124]
+                                      [upload-id 1020 1124]
+                                      [upload-id 1024 1124]])))
+
+         (fact "should notify about completion once no data is passed to it"
+               (let [file-plus-headers-size 1025
+                     notifications (ref [])
+                     notifier-fn (fn [upload-id current total] (dosync (alter notifications conj [upload-id current total])))]
+               
+                 (io/delete-file temp-path true)
+               
+                 (let [writer-fn (make-writer-fn temp-dir upload-id notifier-fn file-plus-headers-size)]
+                   (writer-fn)
+
+                   @notifications => [[upload-id 1025 1025]])))))
 
 (facts "about upload progress notification"
        
