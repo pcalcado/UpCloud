@@ -4,7 +4,15 @@ Simple file uploading app running on Heroku.
 
 ## Usage
 
-FIXME: write
+You need:
+- Clojure
+- Leinigen
+
+To run:
+
+   $ export PORT=8080 && lein run
+
+And go to http://localhost:8080/
 
 ## Comments
 This is very simple implementation of a file uploader in Clojure.
