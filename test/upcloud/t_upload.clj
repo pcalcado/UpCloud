@@ -34,16 +34,17 @@
                                   [upload-id 2048 2049]
                                   [upload-id 2049 2049]])))
 
-(facts "about making a write function"
-       (let [temp-dir (System/getProperty "java.io.tmpdir")
-             temp-file "test.dat"
-             temp-path (str temp-dir temp-file)]
+(facts "about the write function"
 
-         (fact "should write to directory specified"
+       (fact "should write to directory specified"
+             (let [temp-dir (System/getProperty "java.io.tmpdir")
+                   upload-id "test.dat"
+                   temp-path (str temp-dir upload-id)]
+
                (io/delete-file temp-path true)
                (let [first-bytes (. "These are the first bytes..." getBytes)
                      more-bytes (. "and these are even more bytes!" getBytes)
-                     writer-fn (make-writer-fn temp-dir temp-file)]
+                     writer-fn (make-writer-fn temp-dir upload-id)]
                  (writer-fn first-bytes)
                  (writer-fn more-bytes)
                  (slurp temp-path) => "These are the first bytes...and these are even more bytes!"))))

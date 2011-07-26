@@ -37,7 +37,7 @@
                 (notifier-fn upload-id total-bytes-read-in-this-iteration file-size)
                 (recur total-bytes-read-in-this-iteration)))))))))
 
-(defn make-writer-fn [target-dir target-file]
+(defn make-writer-fn [target-dir upload-id]
   (fn [bytes]
-    (with-open [out (io/output-stream (str target-dir target-file) :append true)]
+    (with-open [out (io/output-stream (str target-dir upload-id) :append true)]
       (.write out bytes))))
