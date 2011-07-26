@@ -7,12 +7,17 @@ Simple file uploading app running on Heroku.
 You need:
 - Clojure
 - Leinigen
+- Midje's Leinigen plugin
 
 To run:
 
    $ export PORT=8080 && lein run
 
 And go to http://localhost:8080/
+
+To run the tests:
+
+   $ lein midje
 
 ## Comments
 This is very simple implementation of a file uploader in Clojure.
