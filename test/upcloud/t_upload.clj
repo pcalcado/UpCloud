@@ -28,8 +28,7 @@
                    file-size (alength a-lot-of-bytes)
                    upload! (make-upload-fn upload-id writer-fn notifier-fn file-size)]
                (upload! fake-input)
-               @notifications => [[upload-id 0 2049]
-                                  [upload-id 512 2049]
+               @notifications => [[upload-id 512 2049]
                                   [upload-id 1024 2049]
                                   [upload-id 1536 2049]
                                   [upload-id 2048 2049]
