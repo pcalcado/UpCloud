@@ -3,8 +3,6 @@
         (ring.middleware multipart-params file file-info params)
         (upcloud upload)))
 
-(defn log [& msg] (println "LOG [" (System/currentTimeMillis) "]" msg))
-
 (defn return-200 [& _] {:status 200})
 (defn return-400 [& _] {:status 400})
 (defn return-404 [& _] {:status 404})

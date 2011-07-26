@@ -3,6 +3,8 @@
   (:import [java.util Arrays]
            [java.io InputStream]))
 
+(defn log [& msg] (println "LOG [" (System/currentTimeMillis) "]" msg))
+
 (def *current-uploads* (ref {}))
 
 (defn notify-progress-for [upload-id bytes-read total-size]
