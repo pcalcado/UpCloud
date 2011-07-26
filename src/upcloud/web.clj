@@ -64,11 +64,11 @@
         temp-dir (temp-directory)]
    (try
      (let [notifier-fn notify-progress-for
-           writer-fn (make-writer-fn temp-dir upload-id notifier-fn (approximate-file-size req))
-           upload! (make-upload-fn upload-id
-                                   writer-fn
-                                   notifier-fn
-                                   (approximate-file-size req))
+           writer-fn (make-writer-fn temp-dir
+                                     upload-id
+                                     notifier-fn
+                                     (approximate-file-size req))
+           upload! (make-upload-fn upload-id writer-fn)
            store-fn (fn [multipart-map] (upload! (:stream multipart-map)))]
        ((wrap-multipart-params return-200 {:store store-fn}) req))
      (catch Exception _

@@ -15,9 +15,7 @@
                    writer-fn (fn
                                ([bytes] (dosync (alter chunks concat (seq bytes))))
                                ([] nil))
-                   notifier-fn (fn [& _])
-                   file-size (alength a-lot-of-bytes)
-                   upload! (make-upload-fn upload-id writer-fn notifier-fn file-size)]
+                   upload! (make-upload-fn upload-id writer-fn)]
                (upload! fake-input)
                @chunks) => (seq a-lot-of-bytes)))
 
