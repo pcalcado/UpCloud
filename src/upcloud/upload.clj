@@ -41,15 +41,15 @@
 (defn make-writer-fn [target-dir upload-id notifier-fn file-size]
   (let [writer-agent (agent 0)]
     (fn
-      ([] (send writer-agent (fn [_]
+      ([] (send-off writer-agent (fn [_]
                                (notifier-fn upload-id file-size file-size)
-                               (log "Finished writing " upload-id))))
+                               (log "Finished writing " upload-id)
+                               writer-agent)))
       ([bytes]
-         (send writer-agent
-               (fn [total-bytes-read-so-far]
-                 (with-open [out (io/output-stream (str target-dir upload-id) :append true)]
-                   (.write out bytes))
-                 (let [m (+ total-bytes-read-so-far (alength bytes))]
-                   (notifier-fn upload-id m file-size)
-                   m)))))))
-
+         (send-off writer-agent (fn [total-bytes-read-so-far]
+                              (with-open [out (io/output-stream (str target-dir upload-id) :append true)]
+                                (.write out bytes))
+                              (let [total-bytes-in-this-iteration (+ total-bytes-read-so-far (alength bytes))]
+                                (notifier-fn upload-id total-bytes-in-this-iteration file-size)
+                                total-bytes-in-this-iteration)
+                              writer-agent))))))

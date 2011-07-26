@@ -9,7 +9,7 @@
 (facts "about uploading content"
        
        (fact "should write uploaded file in chunks"
-             (let [upload-id "564435.doc"
+             (let [upload-id "000.someExtension"
                    fake-input (ByteArrayInputStream. a-lot-of-bytes)
                    chunks (ref (seq nil))
                    writer-fn (fn
@@ -21,7 +21,7 @@
 
 (facts "about the write function"
        (let [temp-dir (System/getProperty "java.io.tmpdir")
-             upload-id "test.dat"
+             upload-id "6669.dat"
              temp-path (str temp-dir upload-id)]
 
          (fact "should write to directory specified"
@@ -39,8 +39,6 @@
 
          (fact "should notify about progress every time it writes a chunk"
                (let [first-chunk (byte-array 1000)
-                     second-chunk (byte-array 20)
-                     third-chunk (byte-array 4)
                      file-size 1024
                      headers-size 100
                      file-plus-headers-size (+ file-size headers-size)
@@ -50,13 +48,9 @@
                  (io/delete-file temp-path true)
                  
                  (let [writer-fn (make-writer-fn temp-dir upload-id notifier-fn file-plus-headers-size)]
-                   (writer-fn first-chunk)
-                   (writer-fn second-chunk)
-                   (writer-fn third-chunk)
-
-                   @notifications => [[upload-id 1000 1124]
-                                      [upload-id 1020 1124]
-                                      [upload-id 1024 1124]])))
+                   (await (writer-fn first-chunk))
+                   
+                   @notifications => [[upload-id 1000 1124]])))
 
          (fact "should notify about completion once no data is passed to it"
                (let [file-plus-headers-size 1025
