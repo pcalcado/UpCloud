@@ -26,6 +26,7 @@
   (fn [#^InputStream input-stream]
     (let [buffer-size 512
           buffer (byte-array buffer-size)]
+      (log "Started reading " upload-id)
       (with-open [input input-stream]
         (loop []
           (let [number-of-bytes-read (.read input buffer)]
@@ -34,15 +35,21 @@
                 (let [chunk (Arrays/copyOf buffer number-of-bytes-read)]
                   (writer-fn chunk))
                 (recur))))))
-      (writer-fn))))
+      (writer-fn)
+      (log "Finished reading " upload-id))))
 
 (defn make-writer-fn [target-dir upload-id notifier-fn file-size]
-  (let [total-bytes-read-so-far (ref 0)]
+  (let [writer-agent (agent 0)]
     (fn
-      ([] (notifier-fn upload-id file-size file-size))
+      ([] (send writer-agent (fn [_]
+                               (notifier-fn upload-id file-size file-size)
+                               (log "Finished writing " upload-id))))
       ([bytes]
-      (with-open [out (io/output-stream (str target-dir upload-id) :append true)]
-        (.write out bytes))
-      (dosync (alter total-bytes-read-so-far + (alength bytes)))
-      (notifier-fn upload-id @total-bytes-read-so-far file-size)))))
+         (send writer-agent
+               (fn [total-bytes-read-so-far]
+                 (with-open [out (io/output-stream (str target-dir upload-id) :append true)]
+                   (.write out bytes))
+                 (let [m (+ total-bytes-read-so-far (alength bytes))]
+                   (notifier-fn upload-id m file-size)
+                   m)))))))
 
