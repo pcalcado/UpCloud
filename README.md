@@ -17,13 +17,13 @@ And go to http://localhost:8080/
 ## Comments
 This is very simple implementation of a file uploader in Clojure.
 
-I decided to keep depedencies to a minimum, so the only external
+I decided to keep dependencies to a minimum, so the only external
 library used by the main Clojure app is Ring. I use Midje for testing
 --it's my favourite testing framework for Clojure at the moment. The
 JavaScript piece uses JQuery (I am not doing JS without JQuery!) and I
 am testing it with Jasmine.
 
-I started using a [simpler and syncrhonous read/write
+I started using a [simpler and synchronous read/write
 pipeline](https://github.com/pcalcado/UpCloud/blob/26d33a84d17f8241778829071067a4da64cfcbb5/src/upcloud/upload.clj);
 but in [a8b8156 decided that it would be better to delegate writing to
 an agent](https://github.com/pcalcado/UpCloud/commit/a8b8156a51a520e2e36e24218319636cbcddbd7e)
