@@ -47,9 +47,9 @@
                                writer-agent)))
       ([bytes]
          (send-off writer-agent (fn [total-bytes-read-so-far]
-                              (with-open [out (io/output-stream (str target-dir upload-id) :append true)]
-                                (.write out bytes))
-                              (let [total-bytes-in-this-iteration (+ total-bytes-read-so-far (alength bytes))]
-                                (notifier-fn upload-id total-bytes-in-this-iteration file-size)
-                                total-bytes-in-this-iteration)
-                              writer-agent))))))
+                                  (with-open [out (io/output-stream (str target-dir upload-id) :append true)]
+                                    (.write out bytes))
+                                  (let [total-bytes-in-this-iteration (+ total-bytes-read-so-far (alength bytes))]
+                                    (notifier-fn upload-id total-bytes-in-this-iteration file-size)
+                                    total-bytes-in-this-iteration)
+                                  writer-agent))))))
