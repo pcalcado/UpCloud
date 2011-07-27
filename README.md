@@ -72,6 +72,8 @@ structure to make sure it complies with the MP3 format before doing
 anything with it.
 - Inline HTML kinda sucks but for an application with two pages and
 minimal dependencies I don't think it would be a big deal.
+- The application deployed to Heroku seems at least 40% slower than
+running on my machine.
 - Leiningen 1.6.1 [has a
 bug](https://github.com/technomancy/leiningen/issues/227) when trying
 to run agents using the REPL. This code worked fine for me using the
