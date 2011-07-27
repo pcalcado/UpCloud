@@ -57,8 +57,11 @@ the idea is to use the local hard drive just as a swap area and send
 the binaries to S3.
 - I played around buffer sizes for a bit but changing values didn't
 improve performance on my machine. I think 512 bytes provides good
-feedback for the user considering most files would be MP3, whioch I
+feedback for the user considering most files would be MP3, which I
 believe are often around 3MB.
+- One strategy which could help improve writing time is to avoid
+opening the file and appending to it so many times. I decided that for
+this exercise this wouldn't be an issue, thoudh.
 - For scalability, the in-memory map can probably be replaced by
 memcached or some other simple key-value storage system.
 - The only security check at the moment is to make sure the file name
@@ -67,6 +70,8 @@ filesystem. I assumed this was enough for this exercise, in a
 production-ready setup I would probably think about checking the file
 structure to make sure it complies with the MP3 format before doing
 anything with it.
+- Inline HTML kinda sucks but for an application with two pages and
+minimal dependencies I don't think it would be a big deal.
 - Leiningen 1.6.1 [has a
 bug](https://github.com/technomancy/leiningen/issues/227) when trying
 to run agents using the REPL. This code worked fine for me using the
