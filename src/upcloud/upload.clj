@@ -5,10 +5,10 @@
 
 (defn log [& msg] (println "LOG [" (System/currentTimeMillis) "]" msg))
 
-(def *current-uploads* (ref {}))
+(def *current-uploads* (atom {}))
 
 (defn notify-progress-for [upload-id bytes-read total-size]
-  (dosync (alter *current-uploads* assoc upload-id {:read bytes-read :total total-size})))
+  (swap! *current-uploads* assoc upload-id {:read bytes-read :total total-size}))
 
 (defn progress-for [upload-id]
   (let [upload-status (@*current-uploads* upload-id)
@@ -20,7 +20,8 @@
 
 (defn abandon [file-dir upload-id]
   (io/delete-file (str file-dir upload-id) true)
-  (dosync (alter *current-uploads* dissoc upload-id)))
+  (swap! *current-uploads* dissoc upload-id)
+  (log "Abandoned " upload-id))
 
 (defn make-upload-fn [upload-id writer-fn]
   (fn [#^InputStream input-stream]

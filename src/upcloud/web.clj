@@ -72,7 +72,7 @@
            store-fn (fn [multipart-map] (upload! (:stream multipart-map)))]
        ((wrap-multipart-params return-200 {:store store-fn}) req))
      (catch Exception _
-       (log "================================= Error: " _)
+       (log "================================= ERROR: " upload-id " -> " _)
        (abandon temp-dir upload-id)
        (return-400)))))
 
